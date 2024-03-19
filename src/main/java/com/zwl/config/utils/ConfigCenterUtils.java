@@ -14,6 +14,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.logging.Logger;
@@ -27,7 +28,7 @@ import java.util.regex.Pattern;
  * @date 2024年03月18日 19:59:08
  * @packageName com.zwl.config.utils
  * @className ConfigCenterUtils
- * @describe TODO
+ * @describe 处理配置中心的工具类
  */
 public class ConfigCenterUtils {
     private static final Logger logger = Logger.getLogger(ConfigCenterUtils.class.getName());
@@ -60,7 +61,7 @@ public class ConfigCenterUtils {
             }
         } catch (Exception e) {
             // 记录转换失败的警告
-            logger.warning("The xml file failed to convert the string !");
+            logger.severe("The xml file failed to convert the string !");
             return null;
         }
     }
@@ -132,6 +133,10 @@ public class ConfigCenterUtils {
             String apusicConfigItem = matcher.group();
             // 解析出配置项将要保存的文件名
             String fileName = getSaveConfigFile(apusicConfigItem);
+            if (fileName == null){
+                logger.severe("config标签未设置name属性");
+                return;
+            }
             // 解析出<config>标签内的具体配置项内容
             String configItem = matcher.group(1);
 
@@ -163,7 +168,7 @@ public class ConfigCenterUtils {
         String filePath = ConfigCenterUtils.getFilePath("conf", path);
         // 检查文件是否存在
         if (!Files.exists(Paths.get(filePath))) {
-            logger.warning("The file " + filePath + " does not exist.");
+            logger.severe("The file " + filePath + " does not exist.");
             return null;
         }
 
@@ -181,7 +186,7 @@ public class ConfigCenterUtils {
             // 将解析后的 Document 对象转换为字符串并返回
             return ConfigCenterUtils.convertXMLDocumentToString(document);
         } catch (Exception e) {
-            logger.warning("Failed to parse the XML file: " + e.getMessage());
+            logger.severe("Failed to parse the XML file: " + e.getMessage());
         }
 
         return null;
@@ -217,10 +222,11 @@ public class ConfigCenterUtils {
         try {
             // 初始化 XML 解析器
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+
             DocumentBuilder builder = factory.newDocumentBuilder();
 
             // 解析配置字符串为 XML 文档并标准化文档结构
-            Document document = builder.parse(new ByteArrayInputStream(apusicConfig.getBytes("UTF-8")));
+            Document document = builder.parse(new ByteArrayInputStream(apusicConfig.getBytes(StandardCharsets.UTF_8)));
             document.getDocumentElement().normalize();
 
             // 移除 'config' 元素中的 'name' 属性
@@ -247,7 +253,7 @@ public class ConfigCenterUtils {
                 newDocument.appendChild(importedConfig);
 
                 StringWriter writer = new StringWriter();
-                try {
+                try{
                     transformer.transform(new DOMSource(newDocument), new StreamResult(writer));
                     xmlContentBuilder.append(writer.toString());
                     // 清理当前的文档以备下一个节点处理
@@ -264,7 +270,8 @@ public class ConfigCenterUtils {
             logger.info("File is saved in " + filePath);
 
         } catch (Exception e) {
-            logger.warning("An error occurred while saving the Apusic config.");
+            logger.severe("An error occurred while saving the Apusic config.");
+            e.printStackTrace();
         }
     }
 }

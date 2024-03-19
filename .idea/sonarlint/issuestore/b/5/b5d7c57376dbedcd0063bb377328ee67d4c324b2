@@ -1,0 +1,8 @@
+
+h	java:S112Í"FDefine and throw a dedicated exception instead of using a generic one.(µ°¦Ÿøÿÿÿÿ8—ï÷¢å1
+¶
+java:S6548"˜A Singleton implementation was detected. Make sure the use of the Singleton pattern is required and the implementation is the right one for the context.(î‹Õ±8«ï÷¢å1
+^
+java:S1854Ø";Remove this useless assignment to local variable "content".(Óëá™úÿÿÿÿ8üšˆ¤å1
+O
+java:S1481Ø",Remove this unused "content" local variable.(Óëá™úÿÿÿÿ8þšˆ¤å1
