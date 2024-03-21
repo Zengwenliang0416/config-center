@@ -1,10 +1,11 @@
-package com.zwl.config.utils;
+package com.apusic.config.utils;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import javax.management.modelmbean.XMLParseException;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -163,13 +164,12 @@ public class ConfigCenterUtils {
      * @param path 相对于 conf 目录的文件路径
      * @return XML 配置文件的内容，如果文件不存在或读取失败则返回 null
      */
-    public static String getXMLConfig(String path) {
+    public static String getXMLConfig(String path) throws FileNotFoundException, XMLParseException {
         // 获取配置文件的完整路径
         String filePath = ConfigCenterUtils.getFilePath("conf", path);
         // 检查文件是否存在
         if (!Files.exists(Paths.get(filePath))) {
-            logger.severe("The file " + filePath + " does not exist.");
-            return null;
+            throw new FileNotFoundException();
         }
 
         // 创建 DocumentBuilderFactory 实例，并设置属性以禁用外部实体，防止 XXE 攻击
@@ -186,10 +186,8 @@ public class ConfigCenterUtils {
             // 将解析后的 Document 对象转换为字符串并返回
             return ConfigCenterUtils.convertXMLDocumentToString(document);
         } catch (Exception e) {
-            logger.severe("Failed to parse the XML file: " + e.getMessage());
+            throw new XMLParseException();
         }
-
-        return null;
     }
 
     /**

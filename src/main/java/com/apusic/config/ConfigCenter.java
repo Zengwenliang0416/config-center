@@ -1,10 +1,10 @@
-package com.zwl.config;
+package com.apusic.config;
 
 import com.alibaba.nacos.api.NacosFactory;
 import com.alibaba.nacos.api.config.ConfigService;
 import com.alibaba.nacos.api.config.listener.Listener;
-import com.zwl.config.impls.ConfigCenterImpl;
-import com.zwl.config.utils.ConfigCenterUtils;
+import com.apusic.config.inters.ConfigCenterInter;
+import com.apusic.config.utils.ConfigCenterUtils;
 
 import java.util.Properties;
 import java.util.concurrent.Executor;
@@ -19,7 +19,7 @@ import java.util.logging.Logger;
  * @className ConfigCenter
  * @describe 配置中心实现类
  */
-public class ConfigCenter implements ConfigCenterImpl {
+public class ConfigCenter implements ConfigCenterInter {
     private static final Logger logger = Logger.getLogger(ConfigCenter.class.getName());
     private final String configCenterAddr;
     private final String dataId;
@@ -89,15 +89,15 @@ public class ConfigCenter implements ConfigCenterImpl {
      */
     private ConfigCenter() {
         // 初始化配置中心地址，必须指定
-        this.configCenterAddr = getConfigValue("CONFIG_CENTER_ADDR", "CONFIG_CENTER_ADDR");
+        this.configCenterAddr = getConfigValue("AAMS_CONFIG_CENTER_ADDR", "AAMS_CONFIG_CENTER_ADDR");
         // 初始化配置数据ID，从configs.xml文件中读取，如果不存在则使用默认值
-        this.dataId = getConfigValue("CONFIG_DATA_ID", "CONFIG_DATA_ID", "configs.xml");
+        this.dataId = getConfigValue("AAMS_CONFIG_DATA_ID", "AAMS_CONFIG_DATA_ID", "configs.xml");
         // 初始化配置分组，默认使用DEFAULT_GROUP
-        this.group = getConfigValue("CONFIG_GROUP", "CONFIG_GROUP", "DEFAULT_GROUP");
+        this.group = getConfigValue("AAMS_CONFIG_GROUP", "AAMS_CONFIG_GROUP", "DEFAULT_GROUP");
         // 读取配置超时时间，以毫秒为单位，默认为3000
-        this.timeoutMs = Long.parseLong(getConfigValue("CONFIG_TIMEOUT_MS", "CONFIG_TIMEOUT_MS", "3000"));
+        this.timeoutMs = Long.parseLong(getConfigValue("AAMS_CONFIG_TIMEOUT_MS", "AAMS_CONFIG_TIMEOUT_MS", "3000"));
         // 初始化配置文件名称，默认为configs.xml
-        this.configsFileName = getConfigValue("CONFIG_FILE_NAME", "CONFIG_FILE_NAME", "configs.xml");
+        this.configsFileName = getConfigValue("AAMS_CONFIG_FILE_NAME", "AAMS_CONFIG_FILE_NAME", "configs.xml");
         // 创建并初始化监听器，用于接收配置信息更新
         this.listener = new Listener() {
             @Override
@@ -140,6 +140,7 @@ public class ConfigCenter implements ConfigCenterImpl {
             logger.info("Successfully publish the configuration to the configuration center !");
             return true;
         } else {
+            logger.severe("Publish configuration error !");
             return false;
         }
     }
@@ -151,10 +152,9 @@ public class ConfigCenter implements ConfigCenterImpl {
      * @param group  配置的分组，用于对配置进行分类管理。
      * @return boolean 发布成功返回true，失败返回false。
      */
-    public boolean publishApusicConfig(String dataId, String group) {
+    private boolean publishApusicConfig(String dataId, String group) {
         if (configCenterAddr == null) {
-            logger.severe("Configuration center address not set.");
-            return false;
+            throw new IllegalArgumentException("Configuration center address not set.");
         }
         try {
             // 初始化配置属性，包括配置中心地址
@@ -169,8 +169,7 @@ public class ConfigCenter implements ConfigCenterImpl {
 
             // 若配置内容为空，则记录警告信息并返回false
             if (content == null) {
-                logger.severe("The content to be published is null.");
-                return false;
+                throw new IllegalArgumentException("The content to be published is null.");
             }
 
             // 发布配置到配置中心
@@ -204,8 +203,7 @@ public class ConfigCenter implements ConfigCenterImpl {
      */
     private void addConfigListener(String dataId, String group, Listener listener) throws Exception {
         if (configCenterAddr == null) {
-            logger.severe("Configuration center address not set.");
-            return;
+            throw new IllegalStateException("Configuration center address not set.");
         }
         // 初始化配置属性，设置配置中心的地址。
         Properties properties = new Properties();

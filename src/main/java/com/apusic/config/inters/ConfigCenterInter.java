@@ -1,4 +1,4 @@
-package com.zwl.config.impls;
+package com.apusic.config.inters;
 
 /**
  * @author 曾文亮
@@ -9,7 +9,7 @@ package com.zwl.config.impls;
  * @className ConfigCenterImpl
  * @describe TODO
  */
-public interface ConfigCenterImpl {
+public interface ConfigCenterInter {
     /**
      * 更新配置
      * @param content
